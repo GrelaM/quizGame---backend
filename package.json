@@ -1,0 +1,24 @@
+{
+  "name": "quizbackend",
+  "version": "1.0.0",
+  "description": "backend for quiz game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon dist/app.js"
+  },
+  "author": "Mateusz Grela",
+  "license": "ISC",
+  "dependencies": {
+    "@types/body-parser": "^1.19.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "read-excel-file": "^5.1.0",
+    "xlsx": "^0.16.9"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.11",
+    "@types/node": "^14.14.37",
+    "nodemon": "^2.0.7"
+  }
+}
