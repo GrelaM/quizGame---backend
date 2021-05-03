@@ -1,28 +1,45 @@
 import { RequestHandler } from 'express'
-
-import { gamesStorage } from '../data/GamesStorage';
+import { getDb } from '../database/mongodb'
+import { ObjectId } from 'mongodb'
 
 export const singleGameResultsHandler: RequestHandler = (req, res, next) => {
-    const singleGame = findAndReturnGameHandler(req.params.gameid)
+  const gameId = new ObjectId(req.params.gameid)
+  const db = getDb()
 
-    if(singleGame) {
-        const points = singleGame.points
-        const questions = singleGame.totalQuestionNumber
-        res.status(200).json({
-			message: 'This game is ended!',
-            points: points,
-            maxPoints: questions
-		});
-    } else {
+  db.collection('games')
+    .findOne({ _id: gameId })
+    .then((data) => {
+      if (!data) {
         res.status(404).json({
-			error: 'This game does not exist!'
-		});
-    }
+          message: 'This game does not exist!'
+        })
+      }
+      return data
+    })
+    .then((game) => {
+      const questions = game.totalQuestionNumber
+      const correctAnswers = game.correctAnswers
+      const points = game.points
+
+      res.status(200).json({
+        message: 'This game is ended!',
+        points: points,
+        givenCorrectAnswers: correctAnswers,
+        totalQuestionNumber: questions
+      })
+    })
+    .then(() => {
+      db.collection('games').updateOne(
+        { _id: gameId },
+        {
+          $set: { gameStatus: false, finishedAt: new Date() }
+        }
+      )
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).json({
+        message: 'Server error...'
+      })
+    })
 }
-
-// HANDLERS
-
-const findAndReturnGameHandler = (id: string) => {
-	const singleGame = gamesStorage.games.find((el) => el.gameId === id);
-	return singleGame;
-};

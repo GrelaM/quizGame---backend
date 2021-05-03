@@ -1,23 +1,35 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.startNewGame = void 0;
-const Game_1 = require("../models/Game");
-const GamesStorage_1 = require("../data/GamesStorage");
+const mongodb_1 = require("../database/mongodb");
+const Game_1 = __importDefault(require("../models/Game"));
 const startNewGame = (req, res, next) => {
-    const id = GamesStorage_1.gamesStorage.generateNewId();
-    const totalQuestionNum = req.body.totalQuestionNum || 10;
-    const questions = GamesStorage_1.gamesStorage.getQuestionsPackage(totalQuestionNum);
-    const answers = 0;
-    const points = 0;
-    const gameStatus = true;
-    const timer = req.body.timer || 9; // We need this to change!!!
-    const cratedAt = new Date();
-    const newGame = new Game_1.Game(id, totalQuestionNum, questions, answers, points, gameStatus, timer, cratedAt);
-    GamesStorage_1.gamesStorage.addNewGame(newGame);
-    res.status(201).json({
-        message: 'New Game was created!',
-        gameId: newGame.gameId,
-        timer: newGame.timer
-    });
+    const db = mongodb_1.getDb();
+    return db
+        .collection('questions')
+        .aggregate([
+        // { $match: { Difficulty: 2 } }, // LATER WE CAN CHOOSE DIFFICULTY LEVEL
+        { $sample: { size: 10 } }
+    ])
+        .toArray()
+        .then((questions) => {
+        const newGame = new Game_1.default(10, questions, 15);
+        newGame
+            .save()
+            .then((game) => {
+            res
+                .status(200)
+                .json({
+                message: 'New Game has been created...',
+                gameId: game._id,
+                artificialGameId: game.artificialGameId
+            });
+        })
+            .catch((err) => console.log(err));
+    })
+        .catch((err) => console.log(err));
 };
 exports.startNewGame = startNewGame;

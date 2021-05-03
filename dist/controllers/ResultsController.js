@@ -1,27 +1,42 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.singleGameResultsHandler = void 0;
-const GamesStorage_1 = require("../data/GamesStorage");
+const mongodb_1 = require("../database/mongodb");
+const mongodb_2 = require("mongodb");
 const singleGameResultsHandler = (req, res, next) => {
-    const singleGame = findAndReturnGameHandler(req.params.gameid);
-    if (singleGame) {
-        const points = singleGame.points;
-        const questions = singleGame.totalQuestionNumber;
+    const gameId = new mongodb_2.ObjectId(req.params.gameid);
+    const db = mongodb_1.getDb();
+    db.collection('games')
+        .findOne({ _id: gameId })
+        .then((data) => {
+        if (!data) {
+            res.status(404).json({
+                message: 'This game does not exist!'
+            });
+        }
+        return data;
+    })
+        .then((game) => {
+        const questions = game.totalQuestionNumber;
+        const correctAnswers = game.correctAnswers;
+        const points = game.points;
         res.status(200).json({
             message: 'This game is ended!',
             points: points,
-            maxPoints: questions
+            givenCorrectAnswers: correctAnswers,
+            totalQuestionNumber: questions
         });
-    }
-    else {
-        res.status(404).json({
-            error: 'This game does not exist!'
+    })
+        .then(() => {
+        db.collection('games').updateOne({ _id: gameId }, {
+            $set: { gameStatus: false, finishedAt: new Date() }
         });
-    }
+    })
+        .catch((err) => {
+        console.log(err);
+        res.status(500).json({
+            message: 'Server error...'
+        });
+    });
 };
 exports.singleGameResultsHandler = singleGameResultsHandler;
-// HANDLERS
-const findAndReturnGameHandler = (id) => {
-    const singleGame = GamesStorage_1.gamesStorage.games.find((el) => el.gameId === id);
-    return singleGame;
-};

@@ -1,96 +1,129 @@
-import { RequestHandler } from 'express';
-
-import { gamesStorage } from '../data/GamesStorage';
+import { RequestHandler } from 'express'
+import { getDb } from '../database/mongodb'
+import { ObjectId } from 'mongodb'
+import { AnswerObject } from '../constants/Interfaces'
 
 export const singleGameQuestionHandler: RequestHandler = (req, res, next) => {
-	const singleGame = findAndReturnGameHandler(req.params.gameid);
+  const gameId = new ObjectId(req.params.gameid)
+  const db = getDb()
 
-	if (singleGame) {
-		const question = singleGame.questions[singleGame.givenAnswers];
-		let hintsArray: string[] = [];
-		hintsArray.push(question.Hint_1, question.Hint_2, question.Hint_3);
+  db.collection('games')
+    .findOne({ _id: gameId })
+    .then((data) => {
+      if (!data) {
+        res.status(404).json({
+          message: 'This game does not exist!'
+        })
+      }
+      return data
+    })
+    .then((game) => {
+      const question = game.questions[game.givenAnswers]
+      let hintsArray: string[] = []
+      hintsArray.push(question.Hint_1, question.Hint_2, question.Hint_3)
 
-		let status = true;
-		if (singleGame.givenAnswers === singleGame.totalQuestionNumber - 1) {
-			status = false;
-		}
+      let status = true
+      if (game.givenAnswers === game.questionsTotalNumber - 1) {
+        status = false
+      }
+      
+      const answersSortedArray = sortArrayHandler(
+        question.Correct,
+        question.Incorrect_1,
+        question.Incorrect_2,
+        question.Incorrect_3
+      )
 
-		const answersSortedArray = sortArrayHandler(
-			question.Correct,
-			question.Incorrect_1,
-			question.Incorrect_2,
-			question.Incorrect_3
-		);
+      const data = {
+        category: game.Category,
+        questionNumber: game.givenAnswers + 1, // Answers begin with 0...
+        question: question,
+        hints: hintsArray,
+        answers: answersSortedArray,
+        gameStatus: status
+      }
 
-		const data = {
-			category: question.Category,
-			questionNumber: singleGame.givenAnswers + 1, // Answers begin with 0...
-			question: question.Question,
-			hints: hintsArray,
-			answers: answersSortedArray,
-            gameStatus: status
-		};
-
-		res.status(200).json({
-			question: data
-		});
-	} else {
-		res.status(404).json({
-			error: 'This game does not exist!'
-		});
-	}
-};
+      res.status(200).json({
+        message: 'This is your game data.',
+        question: data
+      })
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).json({
+        message: 'Server error...'
+      })
+    })
+}
 
 export const singleGameAnswerHandler: RequestHandler = (req, res, next) => {
-	const id = req.params.gameid;
-	const singleGame = findAndReturnGameHandler(id);
-	const currentQuestionObjIndex = +req.params.question;
+  const gameId = new ObjectId(req.params.gameid)
+  const currentQuestionObjIndex = +req.params.question - 1
+  const passedAnswer: AnswerObject = req.body
+  const db = getDb()
 
-	if (singleGame) {
-		const answer: {
-			code: number;
-			value: string;
-		} =
-			req.body;
+  db.collection('games')
+    .findOne({ _id: gameId })
+    .then((data) => {
+      if (!data) {
+        res.status(404).json({
+          message: 'We could not check the answer. Game does not exist!'
+        })
+      }
+      return data
+    })
+    .then((game) => {
+      let data
+      if (
+        passedAnswer.code === 0 &&
+        passedAnswer.value === game.questions[currentQuestionObjIndex].Correct
+      ) {
+        data = {
+          givenAnswers: 1,
+          correctAnswers: 1,
+          points: 1
+        }
+      } else {
+        data = { givenAnswers: 1, incorrectAnswers: 1 }
+      }
 
-		const currentCorrectAnswer = singleGame.questions[currentQuestionObjIndex].Correct;
-
-		let status: boolean;
-		if (answer.code === 0 && answer.value === currentCorrectAnswer) {
-			status = true;
-			gamesStorage.checkAnswerHandler(status, id);
-		} else {
-			status = false;
-			gamesStorage.checkAnswerHandler(status, id);
-		}
-
-		res.status(202).send({
-			message: 'Answer was accepted!',
-			status: true
-		});
-	} else {
-		res.status(404).json({
-			error: 'Counld not check the answer. This game does not exist!'
-		});
-	}
-};
+      db.collection('games')
+        .updateOne(
+          { _id: gameId },
+          {
+            $inc: data
+          }
+        )
+        .then(() => {
+          res.status(200).json({
+            message: 'Answer has been accepted.'
+          })
+        })
+        .catch((err) => console.log(err))
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).json({
+        message: 'Server error...'
+      })
+    })
+}
 
 // HANDLERS
-
-const findAndReturnGameHandler = (id: string) => {
-	const singleGame = gamesStorage.games.find((el) => el.gameId === id);
-	return singleGame;
-};
-
-const sortArrayHandler = (correct: string, incorrect_1: string, incorrect_2: string, incorrect_3: string) => {
-	const primaryArray = [
-		{ code: 0, value: correct },
-		{ code: 1, value: incorrect_1 },
-		{ code: 2, value: incorrect_2 },
-		{ code: 3, value: incorrect_3 }
-	];
-	const shuffeledArray = primaryArray.sort(() => Math.random() - 0.5);
-	return shuffeledArray;
-};
+const sortArrayHandler = (
+  correct: string,
+  incorrect_1: string,
+  incorrect_2: string,
+  incorrect_3: string
+) => {
+  const primaryArray = [
+    { code: 0, value: correct },
+    { code: 1, value: incorrect_1 },
+    { code: 2, value: incorrect_2 },
+    { code: 3, value: incorrect_3 }
+  ]
+  const shuffeledArray = primaryArray.sort(() => Math.random() - 0.5)
+  return shuffeledArray
+}
 
 // VALIDATION OF BODY???
