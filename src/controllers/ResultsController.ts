@@ -17,7 +17,7 @@ export const singleGameResultsHandler: RequestHandler = (req, res, next) => {
       return data
     })
     .then((game) => {
-      const questions = game.totalQuestionNumber
+      const questions = game.questionsTotalNumber
       const correctAnswers = game.correctAnswers
       const points = game.points
 
@@ -25,7 +25,7 @@ export const singleGameResultsHandler: RequestHandler = (req, res, next) => {
         message: 'This game is ended!',
         points: points,
         givenCorrectAnswers: correctAnswers,
-        totalQuestionNumber: questions
+        questions: questions
       })
     })
     .then(() => {

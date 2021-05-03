@@ -7,16 +7,21 @@ exports.startNewGame = void 0;
 const mongodb_1 = require("../database/mongodb");
 const Game_1 = __importDefault(require("../models/Game"));
 const startNewGame = (req, res, next) => {
+    const reqSettings = {
+        quantity: Number(req.body.quantity),
+        time: Number(req.body.time),
+        level: Number(req.body.level)
+    };
     const db = mongodb_1.getDb();
     return db
         .collection('questions')
         .aggregate([
-        // { $match: { Difficulty: 2 } }, // LATER WE CAN CHOOSE DIFFICULTY LEVEL
-        { $sample: { size: 10 } }
+        { $match: { Difficulty: reqSettings.level } },
+        { $sample: { size: reqSettings.quantity } }
     ])
         .toArray()
         .then((questions) => {
-        const newGame = new Game_1.default(10, questions, 15);
+        const newGame = new Game_1.default(reqSettings.quantity, questions, reqSettings.time);
         newGame
             .save()
             .then((game) => {
@@ -25,7 +30,8 @@ const startNewGame = (req, res, next) => {
                 .json({
                 message: 'New Game has been created...',
                 gameId: game._id,
-                artificialGameId: game.artificialGameId
+                artificialGameId: game.artificialGameId,
+                timer: game.timer
             });
         })
             .catch((err) => console.log(err));

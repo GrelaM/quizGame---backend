@@ -28,7 +28,7 @@ const singleGameQuestionHandler = (req, res, next) => {
         const data = {
             category: game.Category,
             questionNumber: game.givenAnswers + 1,
-            question: question,
+            question: question.Question,
             hints: hintsArray,
             answers: answersSortedArray,
             gameStatus: status
@@ -49,7 +49,7 @@ exports.singleGameQuestionHandler = singleGameQuestionHandler;
 const singleGameAnswerHandler = (req, res, next) => {
     const gameId = new mongodb_2.ObjectId(req.params.gameid);
     const currentQuestionObjIndex = +req.params.question - 1;
-    const passedAnswer = req.body;
+    const passedAnswer = { code: req.body.code, value: req.body.value };
     const db = mongodb_1.getDb();
     db.collection('games')
         .findOne({ _id: gameId })
@@ -80,7 +80,8 @@ const singleGameAnswerHandler = (req, res, next) => {
         })
             .then(() => {
             res.status(200).json({
-                message: 'Answer has been accepted.'
+                message: 'Answer has been accepted.',
+                status: true
             });
         })
             .catch((err) => console.log(err));

@@ -17,14 +17,14 @@ const singleGameResultsHandler = (req, res, next) => {
         return data;
     })
         .then((game) => {
-        const questions = game.totalQuestionNumber;
+        const questions = game.questionsTotalNumber;
         const correctAnswers = game.correctAnswers;
         const points = game.points;
         res.status(200).json({
             message: 'This game is ended!',
             points: points,
             givenCorrectAnswers: correctAnswers,
-            totalQuestionNumber: questions
+            questions: questions
         });
     })
         .then(() => {
