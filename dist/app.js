@@ -6,13 +6,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = require("body-parser");
 const mongodb_1 = require("./database/mongodb");
+const socket_io_1 = require("socket.io");
 const updateQuestionsHandler_1 = __importDefault(require("./function/updateQuestionsHandler"));
 const LocalSettingsStorage_1 = __importDefault(require("./data/LocalSettingsStorage"));
 const SettingsRoutes_1 = __importDefault(require("./routes/SettingsRoutes"));
 const GameRoutes_1 = __importDefault(require("./routes/GameRoutes"));
 const SinglePlayerRoutes_1 = __importDefault(require("./routes/SinglePlayerRoutes"));
 const ResultsRoutes_1 = __importDefault(require("./routes/ResultsRoutes"));
+const multiplayerGameHandler_1 = __importDefault(require("./connection/multiplayerGameHandler"));
 const app = express_1.default();
+const http = require('http').createServer(app);
+const io = new socket_io_1.Server(http, { cors: { origin: '*' } });
+const onConnection = (socket) => {
+    multiplayerGameHandler_1.default(io, socket);
+};
+io.on('connection', onConnection);
 app.use(body_parser_1.json());
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -37,7 +45,7 @@ mongodb_1.mongoConnect(() => {
         updateQuestionsHandler_1.default();
     })
         .then(() => {
-        app.listen(8080, () => {
+        http.listen(8080, () => {
             console.log('Server is running at PORT 8080!');
         });
     })

@@ -6,8 +6,8 @@ class LocalSettingsStorage {
         ;
         (this.databaseSettingsCollectionId = ''), (this.artificialGameIds = []);
     }
-    saveCollectionId(id) {
-        this.databaseSettingsCollectionId = id;
+    saveCollectionId(solidId) {
+        this.databaseSettingsCollectionId = solidId;
     }
     saveArtificialGameIds(id) {
         this.artificialGameIds.push(id);
@@ -21,9 +21,9 @@ class LocalSettingsStorage {
     setUpSettingsCollection() {
         const settingsObj = {
             requestedSinglePlayer: 0,
-            playedSinglePlayer: 0,
+            finishedSinglePlayer: 0,
             requestedMultiplayer: 0,
-            playedMutliplayer: 0,
+            finishedMutliplayer: 0,
             lastQuestionUpdate: ''
         };
         const db = mongodb_1.getDb();

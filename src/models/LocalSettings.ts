@@ -8,8 +8,8 @@ export default class LocalSettingsStorage {
     ;(this.databaseSettingsCollectionId = ''), (this.artificialGameIds = [])
   }
 
-  saveCollectionId(id: string) {
-    this.databaseSettingsCollectionId = id
+  saveCollectionId(solidId: string) {
+    this.databaseSettingsCollectionId = solidId
   }
 
   saveArtificialGameIds(id: string) {
@@ -27,9 +27,9 @@ export default class LocalSettingsStorage {
   setUpSettingsCollection() {
     const settingsObj = {
       requestedSinglePlayer: 0,
-      playedSinglePlayer: 0,
+      finishedSinglePlayer: 0,
       requestedMultiplayer: 0,
-      playedMutliplayer: 0,
+      finishedMutliplayer: 0,
       lastQuestionUpdate: ''
     }
 

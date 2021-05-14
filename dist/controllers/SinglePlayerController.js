@@ -26,7 +26,7 @@ const singleGameQuestionHandler = (req, res, next) => {
         }
         const answersSortedArray = sortArrayHandler(question.Correct, question.Incorrect_1, question.Incorrect_2, question.Incorrect_3);
         const data = {
-            category: game.Category,
+            category: question.Category,
             questionNumber: game.givenAnswers + 1,
             question: question.Question,
             hints: hintsArray,
@@ -48,7 +48,7 @@ const singleGameQuestionHandler = (req, res, next) => {
 exports.singleGameQuestionHandler = singleGameQuestionHandler;
 const singleGameAnswerHandler = (req, res, next) => {
     const gameId = new mongodb_2.ObjectId(req.params.gameid);
-    const currentQuestionObjIndex = +req.params.question - 1;
+    const currentQuestionObjIndex = +req.params.question;
     const passedAnswer = { code: req.body.code, value: req.body.value };
     const db = mongodb_1.getDb();
     db.collection('games')

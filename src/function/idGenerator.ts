@@ -19,7 +19,7 @@ const gameIdGeneretor = (digits: number) => {
     singleId()
   }
 
-  LocalSettingsStorage.saveCollectionId(generetedId)
+  LocalSettingsStorage.saveArtificialGameIds(generetedId)
   return generetedId
 }
 

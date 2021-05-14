@@ -1,6 +1,8 @@
 import express, { NextFunction } from 'express'
 import { json } from 'body-parser'
 import { mongoConnect } from './database/mongodb'
+import { Server } from 'socket.io'
+
 import updateQuestionHandler from './function/updateQuestionsHandler'
 import LocalSettingsStorage from './data/LocalSettingsStorage'
 
@@ -9,7 +11,17 @@ import gameRoutes from './routes/GameRoutes'
 import singlePlayerRoutes from './routes/SinglePlayerRoutes'
 import resutlsRoutes from './routes/ResultsRoutes'
 
+import multiplayerGameHandler from './connection/multiplayerGameHandler'
+
 const app = express()
+const http = require('http').createServer(app)
+const io = new Server(http, { cors: { origin: '*' } })
+
+const onConnection = (socket: any) => {
+  multiplayerGameHandler(io, socket)
+}
+
+io.on('connection', onConnection)
 
 app.use(json())
 app.use((req, res, next) => {
@@ -45,9 +57,9 @@ mongoConnect(() => {
       updateQuestionHandler()
     })
     .then(() => {
-      app.listen(8080, () => {
+      http.listen(8080, () => {
         console.log('Server is running at PORT 8080!')
       })
     })
-    .catch((err) => console.log(err))  
+    .catch((err) => console.log(err))
 })

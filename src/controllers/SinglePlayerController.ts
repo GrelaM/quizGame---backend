@@ -35,7 +35,7 @@ export const singleGameQuestionHandler: RequestHandler = (req, res, next) => {
       )
 
       const data = {
-        category: game.Category,
+        category: question.Category,
         questionNumber: game.givenAnswers + 1, // Answers begin with 0...
         question: question.Question,
         hints: hintsArray,
@@ -58,7 +58,7 @@ export const singleGameQuestionHandler: RequestHandler = (req, res, next) => {
 
 export const singleGameAnswerHandler: RequestHandler = (req, res, next) => {
   const gameId = new ObjectId(req.params.gameid)
-  const currentQuestionObjIndex = +req.params.question - 1
+  const currentQuestionObjIndex = +req.params.question
   const passedAnswer: AnswerObject = {code: req.body.code, value: req.body.value}
   
   const db = getDb()

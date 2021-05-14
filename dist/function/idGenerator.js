@@ -19,7 +19,7 @@ const gameIdGeneretor = (digits) => {
     while (idsArray.includes(generetedId)) {
         singleId();
     }
-    LocalSettingsStorage_1.default.saveCollectionId(generetedId);
+    LocalSettingsStorage_1.default.saveArtificialGameIds(generetedId);
     return generetedId;
 };
 exports.default = gameIdGeneretor;
