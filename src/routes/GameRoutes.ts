@@ -10,4 +10,6 @@ router.get('/:gameid/recoveryprocess', Handler.singlePlayerRecoveryMode)
 
 router.post('/newgame/multiplayer', Handler.startNewMultiPlayerGame)
 
+router.get('/multiplayer/:gameid/recoveryprocess', Handler.multiplayerRecoveryMode)
+
 export default router;

@@ -3,24 +3,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.io = void 0;
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = require("body-parser");
 const mongodb_1 = require("./database/mongodb");
 const socket_io_1 = require("socket.io");
 const updateQuestionsHandler_1 = __importDefault(require("./function/updateQuestionsHandler"));
 const LocalSettingsStorage_1 = __importDefault(require("./data/LocalSettingsStorage"));
+// import LocalDataStorage from './data/LocalDataStorage'
 const SettingsRoutes_1 = __importDefault(require("./routes/SettingsRoutes"));
 const GameRoutes_1 = __importDefault(require("./routes/GameRoutes"));
 const SinglePlayerRoutes_1 = __importDefault(require("./routes/SinglePlayerRoutes"));
 const ResultsRoutes_1 = __importDefault(require("./routes/ResultsRoutes"));
-const multiplayerGameHandler_1 = __importDefault(require("./connection/multiplayerGameHandler"));
+const multiplayerGameHandler_1 = __importDefault(require("./game-multiplayer/connection/multiplayerGameHandler"));
 const app = express_1.default();
 const http = require('http').createServer(app);
-const io = new socket_io_1.Server(http, { cors: { origin: '*' } });
+exports.io = new socket_io_1.Server(http, { cors: { origin: '*' } });
 const onConnection = (socket) => {
-    multiplayerGameHandler_1.default(io, socket);
+    multiplayerGameHandler_1.default(socket);
 };
-io.on('connection', onConnection);
+exports.io.on('connection', onConnection);
 app.use(body_parser_1.json());
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');

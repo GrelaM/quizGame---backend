@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import * as settings from '../controllers/SettingsController'
+import * as settings from '../game-singleplayer/controllers/SettingsController'
 
 const router = Router();
 

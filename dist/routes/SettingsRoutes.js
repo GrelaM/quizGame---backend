@@ -20,7 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const settings = __importStar(require("../controllers/SettingsController"));
+const settings = __importStar(require("../game-singleplayer/controllers/SettingsController"));
 const router = express_1.Router();
 router.get('/questionupdate', settings.questionUpdateHandler);
 router.get('/info', settings.infoHandler);

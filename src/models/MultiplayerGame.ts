@@ -7,13 +7,6 @@ export default class Game {
   questionsTotalNumber: number
   questions: QuestionObject[]
   givenAnswers: number
-  user: {
-    nickname: string
-    correctAnswers: number
-    incorrectAnswers: number
-    lastTwoAnswers: number
-    points: number
-  }[]
   gameStatus: boolean
   timer: number
   establishedAt: Date
@@ -28,7 +21,6 @@ export default class Game {
     this.questionsTotalNumber = questionsTotalNumber
     this.questions = questions
     this.givenAnswers = 0
-    this.user = []
     this.gameStatus = true
     this.timer = timer
     this.establishedAt = new Date()

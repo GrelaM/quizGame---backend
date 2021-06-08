@@ -2,10 +2,12 @@ import { RequestHandler } from 'express'
 import { getDb } from '../database/mongodb'
 import { ObjectId } from 'mongodb'
 import Game from '../models/Game'
+import LocalDataStorage from '../data/LocalDataStorage'
 import MultiplayerGame from '../models/MultiplayerGame'
 import LocalSettingsStorage from '../data/LocalSettingsStorage'
+import DbCollections from '../constants/Collections'
 
-export const startNewGame: RequestHandler = (req, res, next) => {
+export const startNewGame: RequestHandler = async (req, res, next) => {
   const settingsId = LocalSettingsStorage.databaseSettingsCollectionId
   const db = getDb()
 
@@ -15,57 +17,68 @@ export const startNewGame: RequestHandler = (req, res, next) => {
     level: Number(req.body.level)
   }
 
-  return db
-    .collection('questions')
-    .aggregate([
-      { $match: { Difficulty: reqSettings.level } }, // LATER WE CAN CHOOSE DIFFICULTY LEVEL
-      { $sample: { size: reqSettings.quantity } }
-    ])
-    .toArray()
-    .then((questions) => {
-      const newGame = new Game(
-        reqSettings.quantity,
-        questions,
-        reqSettings.time
+  try {
+    const questions = await db
+      .collection(DbCollections.QUESTIONS)
+      .aggregate([
+        { $match: { Difficulty: reqSettings.level } },
+        { $sample: { size: reqSettings.quantity } }
+      ])
+      .toArray()
+
+    const newGame = new Game(reqSettings.quantity, questions, reqSettings.time)
+
+    const savedGame = await newGame.save()
+
+    if (savedGame) {
+      await db.collection(DbCollections.SETTINGS).updateOne(
+        { _id: settingsId },
+        {
+          $inc: { requestedSinglePlayer: 1 }
+        }
       )
-      return newGame
-        .save()
-        .then((game) => {
-          db.collection('settings')
-            .updateOne(
-              { _id: settingsId },
-              {
-                $inc: { requestedSinglePlayer: 1 }
-              }
-            )
-            .catch((err) => console.log(err))
-          return game
-        })
-        .then((game) => {
-          res.status(200).json({
-            message: 'New Game has been created...',
-            gameId: game._id,
-            artificialGameId: game.artificialGameId,
-            timer: game.timer
-          })
-        })
+
+      res.status(200).json({
+        message: 'New Game has been created...',
+        gameId: savedGame._id,
+        artificialGameId: savedGame.artificialGameId,
+        timer: savedGame.timer
+      })
+    }
+  } catch (e) {
+    res.status(500).json({
+      message:
+        'We sincerely apologize. Something went wrong. We could not create this game.'
     })
-    .catch((err) => console.log(err))
+  }
 }
 
-export const singlePlayerRecoveryMode: RequestHandler = (req, res, next) => {
+export const singlePlayerRecoveryMode: RequestHandler = async (
+  req,
+  res,
+  next
+) => {
   const gameId = new ObjectId(req.params.gameid)
   const db = getDb()
 
-  db.collection('games')
-    .findOne({ _id: gameId })
-    .then((data) => {
+  try {
+    const recoveredGame = await db
+      .collection(DbCollections.SINGLEPLAYER_GAMES)
+      .findOne({ _id: gameId })
+
+    if (recoveredGame) {
       res.status(200).json({
         message: 'Game recovered successfully.',
-        nextQuestion: data.givenAnswers
+        nextQuestion: recoveredGame.givenAnswers
       })
+    }
+  } catch (e) {
+    res.status(500).json({
+      message:
+        'We sincerely apologize. Something went wrong. We could not recover this game.',
+      nextQuestion: null
     })
-    .catch((err) => console.log(err))
+  }
 }
 
 export const startNewMultiPlayerGame: RequestHandler = async (
@@ -83,7 +96,7 @@ export const startNewMultiPlayerGame: RequestHandler = async (
 
   try {
     const questions = await db
-      .collection('questions')
+      .collection(DbCollections.QUESTIONS)
       .aggregate([
         { $match: { Difficulty: reqSettings.level } },
         { $sample: { size: reqSettings.quantity } }
@@ -96,14 +109,54 @@ export const startNewMultiPlayerGame: RequestHandler = async (
       reqSettings.time,
       8 // id_length
     )
-      try {
-        const saveNewGame = await newGame.save()
-        res.status(200).json({
-          message: 'New Game has been created.',
-          questions: saveNewGame
-        })
-      } catch(e) {return e}
+
+    const savedNewGame = await newGame.save()
+
+    const newLocalGameStatus = {
+      gameId: savedNewGame._id,
+      roomId: newGame.roomId,
+      players: [],
+      receivedAnswers: 0,
+      gameShouldGoOn: true
+    }
+
+    LocalDataStorage.saveLocalGameStatus(newLocalGameStatus)
+
+    res.status(200).json({
+      message: 'New Game has been created...',
+      gameId: savedNewGame._id,
+      roomId: savedNewGame.roomId
+    })
   } catch (e) {
-    console.log(e)
+    res.status(500).json({
+      message:
+        'We sincerely apologize. Something went wrong. We could not create this game.'
+    })
+  }
+}
+
+export const multiplayerRecoveryMode: RequestHandler = async (
+  req,
+  res,
+  next
+) => {
+  const gameId = new ObjectId(req.params.gameid)
+  const db = getDb()
+
+  try {
+    const recoveredGame = await db
+      .collection(DbCollections.MULTIPLAYER_GAMES)
+      .findOne({ _id: gameId })
+
+    if (recoveredGame) {
+      res.status(200).json({
+        message: 'Game recovered successfully.'
+      })
+    }
+  } catch (e) {
+    res.status(500).json({
+      message:
+        'We sincerely apologize. Something went wrong. We could not recover this game.'
+    })
   }
 }

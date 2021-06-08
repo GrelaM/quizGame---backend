@@ -11,7 +11,6 @@ class Game {
         this.questionsTotalNumber = questionsTotalNumber;
         this.questions = questions;
         this.givenAnswers = 0;
-        this.user = [];
         this.gameStatus = true;
         this.timer = timer;
         this.establishedAt = new Date();

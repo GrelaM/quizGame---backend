@@ -7,45 +7,44 @@ const path_1 = __importDefault(require("path"));
 const mongodb_1 = require("../database/mongodb");
 const LocalSettingsStorage_1 = __importDefault(require("../data/LocalSettingsStorage"));
 const mongodb_2 = require("mongodb");
+const Collections_1 = __importDefault(require("../constants/Collections"));
 const xlsx = require('xlsx');
 const fs = require('fs');
 const filePath = path_1.default.resolve(__dirname, '../data/questions/Data.xlsx');
 const questionsFile = xlsx.readFile(filePath);
 const questionsInEnglish = questionsFile.Sheets['Questions'];
 const data = xlsx.utils.sheet_to_json(questionsInEnglish);
+const timeStamp = () => {
+    // const oneHour = 60 * 60 * 1000
+    const fiveMinutes = 5 * 60 * 1000;
+    const newStamp = new Date().getTime() - fiveMinutes;
+    return newStamp;
+};
+const dbQuestionUpdate = async () => {
+    const db = mongodb_1.getDb();
+    const settingsCollectionId = new mongodb_2.ObjectId(LocalSettingsStorage_1.default.databaseSettingsCollectionId);
+    try {
+        await db.collection(Collections_1.default.QUESTIONS).drop();
+        await data.forEach((el) => {
+            db.collection(Collections_1.default.QUESTIONS).insertOne(el);
+        });
+        await db
+            .collection(Collections_1.default.SETTINGS)
+            .updateOne({ _id: settingsCollectionId }, { $set: { lastQuestionUpdate: new Date() } });
+        console.log('Questions were updated!');
+    }
+    catch (e) {
+        console.log(e);
+    }
+};
 const updateQuestionHandler = () => {
-    const timeStamp = () => {
-        // const oneHour = 60 * 60 * 1000
-        const fiveMinutes = 1 * 60 * 1000;
-        const newStamp = new Date().getTime() - fiveMinutes;
-        return newStamp;
-    };
     fs.stat(filePath, (err, stats) => {
         if (err) {
             throw err;
         }
         else if (stats.mtime > timeStamp()) {
             console.log('I should update questions collection...');
-            const db = mongodb_1.getDb();
-            return db
-                .collection('questions')
-                .drop()
-                .then(() => {
-                data.forEach((el) => {
-                    return db
-                        .collection('questions')
-                        .insertOne(el)
-                        .catch((err) => console.log(err));
-                });
-            })
-                .then(() => {
-                const settingsCollectionId = new mongodb_2.ObjectId(LocalSettingsStorage_1.default.databaseSettingsCollectionId);
-                db.collection('settings')
-                    .updateOne({ _id: settingsCollectionId }, { $set: { "lastQuestionUpdate": new Date() } })
-                    .catch(err => console.log(err));
-            })
-                .then(() => console.log('Questions were updated!'))
-                .catch((err) => console.log(err));
+            dbQuestionUpdate();
         }
         else {
             console.log('Question collection is up to date...');

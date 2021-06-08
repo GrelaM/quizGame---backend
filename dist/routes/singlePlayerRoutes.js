@@ -24,7 +24,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const router = express_1.default.Router();
-const Handler = __importStar(require("../controllers/SinglePlayerController"));
+const Handler = __importStar(require("../game-singleplayer/controllers/SinglePlayerController"));
 router.get('/game/:gameid', Handler.singleGameQuestionHandler);
 router.post('/game/:gameid/question/:question', Handler.singleGameAnswerHandler);
 exports.default = router;

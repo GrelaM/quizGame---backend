@@ -5,20 +5,21 @@ import { Server } from 'socket.io'
 
 import updateQuestionHandler from './function/updateQuestionsHandler'
 import LocalSettingsStorage from './data/LocalSettingsStorage'
+// import LocalDataStorage from './data/LocalDataStorage'
 
 import settingsRoutes from './routes/SettingsRoutes'
 import gameRoutes from './routes/GameRoutes'
 import singlePlayerRoutes from './routes/SinglePlayerRoutes'
 import resutlsRoutes from './routes/ResultsRoutes'
 
-import multiplayerGameHandler from './connection/multiplayerGameHandler'
+import multiplayerGameHandler from './game-multiplayer/connection/multiplayerGameHandler'
 
 const app = express()
 const http = require('http').createServer(app)
-const io = new Server(http, { cors: { origin: '*' } })
+export const io = new Server(http, { cors: { origin: '*' } })
 
 const onConnection = (socket: any) => {
-  multiplayerGameHandler(io, socket)
+  multiplayerGameHandler(socket)
 }
 
 io.on('connection', onConnection)

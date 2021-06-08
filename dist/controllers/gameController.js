@@ -3,13 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.startNewMultiPlayerGame = exports.singlePlayerRecoveryMode = exports.startNewGame = void 0;
+exports.multiplayerRecoveryMode = exports.startNewMultiPlayerGame = exports.singlePlayerRecoveryMode = exports.startNewGame = void 0;
 const mongodb_1 = require("../database/mongodb");
 const mongodb_2 = require("mongodb");
 const Game_1 = __importDefault(require("../models/Game"));
+const LocalDataStorage_1 = __importDefault(require("../data/LocalDataStorage"));
 const MultiplayerGame_1 = __importDefault(require("../models/MultiplayerGame"));
 const LocalSettingsStorage_1 = __importDefault(require("../data/LocalSettingsStorage"));
-const startNewGame = (req, res, next) => {
+const Collections_1 = __importDefault(require("../constants/Collections"));
+const startNewGame = async (req, res, next) => {
     const settingsId = LocalSettingsStorage_1.default.databaseSettingsCollectionId;
     const db = mongodb_1.getDb();
     const reqSettings = {
@@ -17,49 +19,55 @@ const startNewGame = (req, res, next) => {
         time: Number(req.body.time),
         level: Number(req.body.level)
     };
-    return db
-        .collection('questions')
-        .aggregate([
-        { $match: { Difficulty: reqSettings.level } },
-        { $sample: { size: reqSettings.quantity } }
-    ])
-        .toArray()
-        .then((questions) => {
+    try {
+        const questions = await db
+            .collection(Collections_1.default.QUESTIONS)
+            .aggregate([
+            { $match: { Difficulty: reqSettings.level } },
+            { $sample: { size: reqSettings.quantity } }
+        ])
+            .toArray();
         const newGame = new Game_1.default(reqSettings.quantity, questions, reqSettings.time);
-        return newGame
-            .save()
-            .then((game) => {
-            db.collection('settings')
-                .updateOne({ _id: settingsId }, {
+        const savedGame = await newGame.save();
+        if (savedGame) {
+            await db.collection(Collections_1.default.SETTINGS).updateOne({ _id: settingsId }, {
                 $inc: { requestedSinglePlayer: 1 }
-            })
-                .catch((err) => console.log(err));
-            return game;
-        })
-            .then((game) => {
+            });
             res.status(200).json({
                 message: 'New Game has been created...',
-                gameId: game._id,
-                artificialGameId: game.artificialGameId,
-                timer: game.timer
+                gameId: savedGame._id,
+                artificialGameId: savedGame.artificialGameId,
+                timer: savedGame.timer
             });
+        }
+    }
+    catch (e) {
+        res.status(500).json({
+            message: 'We sincerely apologize. Something went wrong. We could not create this game.'
         });
-    })
-        .catch((err) => console.log(err));
+    }
 };
 exports.startNewGame = startNewGame;
-const singlePlayerRecoveryMode = (req, res, next) => {
+const singlePlayerRecoveryMode = async (req, res, next) => {
     const gameId = new mongodb_2.ObjectId(req.params.gameid);
     const db = mongodb_1.getDb();
-    db.collection('games')
-        .findOne({ _id: gameId })
-        .then((data) => {
-        res.status(200).json({
-            message: 'Game recovered successfully.',
-            nextQuestion: data.givenAnswers
+    try {
+        const recoveredGame = await db
+            .collection(Collections_1.default.SINGLEPLAYER_GAMES)
+            .findOne({ _id: gameId });
+        if (recoveredGame) {
+            res.status(200).json({
+                message: 'Game recovered successfully.',
+                nextQuestion: recoveredGame.givenAnswers
+            });
+        }
+    }
+    catch (e) {
+        res.status(500).json({
+            message: 'We sincerely apologize. Something went wrong. We could not recover this game.',
+            nextQuestion: null
         });
-    })
-        .catch((err) => console.log(err));
+    }
 };
 exports.singlePlayerRecoveryMode = singlePlayerRecoveryMode;
 const startNewMultiPlayerGame = async (req, res, next) => {
@@ -71,7 +79,7 @@ const startNewMultiPlayerGame = async (req, res, next) => {
     };
     try {
         const questions = await db
-            .collection('questions')
+            .collection(Collections_1.default.QUESTIONS)
             .aggregate([
             { $match: { Difficulty: reqSettings.level } },
             { $sample: { size: reqSettings.quantity } }
@@ -79,19 +87,45 @@ const startNewMultiPlayerGame = async (req, res, next) => {
             .toArray();
         const newGame = new MultiplayerGame_1.default(reqSettings.quantity, questions, reqSettings.time, 8 // id_length
         );
-        try {
-            const saveNewGame = await newGame.save();
-            res.status(200).json({
-                message: 'New Game has been created.',
-                questions: saveNewGame
-            });
-        }
-        catch (e) {
-            return e;
-        }
+        const savedNewGame = await newGame.save();
+        const newLocalGameStatus = {
+            gameId: savedNewGame._id,
+            roomId: newGame.roomId,
+            players: [],
+            receivedAnswers: 0,
+            gameShouldGoOn: true
+        };
+        LocalDataStorage_1.default.saveLocalGameStatus(newLocalGameStatus);
+        res.status(200).json({
+            message: 'New Game has been created...',
+            gameId: savedNewGame._id,
+            roomId: savedNewGame.roomId
+        });
     }
     catch (e) {
-        console.log(e);
+        res.status(500).json({
+            message: 'We sincerely apologize. Something went wrong. We could not create this game.'
+        });
     }
 };
 exports.startNewMultiPlayerGame = startNewMultiPlayerGame;
+const multiplayerRecoveryMode = async (req, res, next) => {
+    const gameId = new mongodb_2.ObjectId(req.params.gameid);
+    const db = mongodb_1.getDb();
+    try {
+        const recoveredGame = await db
+            .collection(Collections_1.default.MULTIPLAYER_GAMES)
+            .findOne({ _id: gameId });
+        if (recoveredGame) {
+            res.status(200).json({
+                message: 'Game recovered successfully.'
+            });
+        }
+    }
+    catch (e) {
+        res.status(500).json({
+            message: 'We sincerely apologize. Something went wrong. We could not recover this game.'
+        });
+    }
+};
+exports.multiplayerRecoveryMode = multiplayerRecoveryMode;
