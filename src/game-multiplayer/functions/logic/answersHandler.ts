@@ -52,7 +52,7 @@ const answersHandler = async (roomId: string, game: Game) => {
       LocalDataStorage.resetGameAnswersState(roomId)
     }
   } catch (e) {
-    console.log(e)
+    throw e
   }
 }
 

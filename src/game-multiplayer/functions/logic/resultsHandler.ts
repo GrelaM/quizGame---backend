@@ -22,7 +22,7 @@ const resultsHandler = async (roomId: string, gameId: string) => {
     }[] = []
     const allPlayers: Player[] = await db
       .collection(DbCollections.MULTIPLAYER_PLAYERS)
-      .find({ roomId: roomId, gameId: gameId })
+      .find({ roomId: roomId })
       .toArray()
 
     allPlayers.map((el) => {
@@ -41,10 +41,10 @@ const resultsHandler = async (roomId: string, gameId: string) => {
     })
 
     finalResults.sort((a, b) => (a.points < b.points ? 1 : -1))
-
+    
     return finalResults
   } catch (e) {
-    console.log(e)
+    throw e
   }
 }
 

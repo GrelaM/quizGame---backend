@@ -12,7 +12,6 @@ var SocketNames;
     SocketNames["START_GAME"] = "start-game";
     SocketNames["END_GAME"] = "end-game";
     SocketNames["SOCKET_DISCONNECT"] = "disconnect";
-    // SOCKET_DISCONNECT = 'socket-disconnect',
     SocketNames["ANSWER"] = "answer";
 })(SocketNames || (SocketNames = {}));
 exports.default = SocketNames;

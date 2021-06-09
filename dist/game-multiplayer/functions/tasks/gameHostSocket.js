@@ -38,7 +38,7 @@ const gameHostSocket = async (socket, gameId, roomId, callback) => {
         }));
     }
     catch (e) {
-        console.log(e);
+        // console.log(e)
         callback({
             roomState: false,
             alert: {

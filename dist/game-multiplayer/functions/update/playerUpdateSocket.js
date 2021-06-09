@@ -12,15 +12,14 @@ const LocalDataStorage_1 = __importDefault(require("../../../data/LocalDataStora
 const Sockets_1 = __importDefault(require("../../../constants/Sockets"));
 const playerUpdateSocket = async (player, passedSocketId) => {
     const db = mongodb_1.getDb();
-    const room = player.roomId;
+    const roomId = player.roomId;
     const nickname = player.nickname;
-    const gameId = player.gameId;
     await db
         .collection(Collections_1.default.MULTIPLAYER_PLAYERS)
         .deleteOne({ socketId: passedSocketId });
-    const playersCollectionUpdate = await updatedPlayersCollection_1.updatedPlayersCollection(room, gameId);
+    const playersCollectionUpdate = await updatedPlayersCollection_1.updatedPlayersCollection(roomId);
     LocalDataStorage_1.default.deletePlayer(player);
-    app_1.io.to(room).emit(Sockets_1.default.PLAYERS_UPDATE, {
+    app_1.io.to(roomId).emit(Sockets_1.default.PLAYERS_UPDATE, {
         type: 'info',
         message: `${nickname} has left the game...`,
         allPlayers: playersCollectionUpdate

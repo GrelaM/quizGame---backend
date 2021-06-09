@@ -46,7 +46,7 @@ export const multiplayer = async (
       io.to(roomId).emit(SocketNames.RESULTS, { results: results })
     }
   } catch (e) {
-    io.to(roomId).emit(SocketNames.FATAL_ERROR, {
+    socket.broadcast.to(roomId).emit(SocketNames.FATAL_ERROR, {
       message: 'Sorry. Fatal error occurred.'
     })
     console.log(e)

@@ -43,7 +43,7 @@ const multiplayerGameHandler = (socket: any) => {
   socket.on(
     SocketNames.JOIN,
     ({ id = socket.id, room, nickname, gameid }: UserData) => {
-      joinSocket(socket, id, gameid, room, nickname)
+      joinSocket(socket, id, room, nickname)
     }
   )
 
@@ -62,7 +62,6 @@ const multiplayerGameHandler = (socket: any) => {
   )
 
   socket.on(SocketNames.SOCKET_DISCONNECT, async () => {
-    console.log('Someone had left...')
     disconnectSocket(socket)
   })
 }

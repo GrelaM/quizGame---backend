@@ -40,7 +40,7 @@ const answersHandler = async (roomId, game) => {
         }
     }
     catch (e) {
-        console.log(e);
+        throw e;
     }
 };
 exports.default = answersHandler;

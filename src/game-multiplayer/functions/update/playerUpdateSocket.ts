@@ -11,19 +11,18 @@ export const playerUpdateSocket = async (
   passedSocketId: string
 ) => {
   const db = getDb()
-  const room = player.roomId
+  const roomId = player.roomId
   const nickname = player.nickname
-  const gameId = player.gameId
 
   await db
     .collection(DbCollections.MULTIPLAYER_PLAYERS)
     .deleteOne({ socketId: passedSocketId })
 
-  const playersCollectionUpdate = await updatedPlayersCollection(room, gameId)
+  const playersCollectionUpdate = await updatedPlayersCollection(roomId)
 
   LocalDataStorage.deletePlayer(player)
 
-  io.to(room).emit(SocketNames.PLAYERS_UPDATE, {
+  io.to(roomId).emit(SocketNames.PLAYERS_UPDATE, {
     type: 'info',
     message: `${nickname} has left the game...`,
     allPlayers: playersCollectionUpdate

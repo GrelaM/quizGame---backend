@@ -9,11 +9,10 @@ const updatedPlayersCollection_1 = require("../../functions/update/updatedPlayer
 const Collections_1 = __importDefault(require("../../../constants/Collections"));
 const LocalDataStorage_1 = __importDefault(require("../../../data/LocalDataStorage"));
 const Sockets_1 = __importDefault(require("../../../constants/Sockets"));
-const joinSocket = async (socket, socketId, gameId, roomId, nickname) => {
+const joinSocket = async (socket, socketId, roomId, nickname) => {
     const db = mongodb_1.getDb();
     const newPlayer = {
         socketId: socketId,
-        gameId: gameId,
         roomId: roomId,
         nickname: nickname,
         correctAnswers: 0,
@@ -23,8 +22,11 @@ const joinSocket = async (socket, socketId, gameId, roomId, nickname) => {
     };
     try {
         await db.collection(Collections_1.default.MULTIPLAYER_PLAYERS).insertOne(newPlayer);
-        const playersCollectionUpdate = await updatedPlayersCollection_1.updatedPlayersCollection(roomId, gameId);
-        LocalDataStorage_1.default.addNewPlayer(roomId, newPlayer);
+        const playersCollectionUpdate = await updatedPlayersCollection_1.updatedPlayersCollection(roomId);
+        const localPlayersCollectionUpdate = LocalDataStorage_1.default.addNewPlayer(roomId, newPlayer);
+        if (!localPlayersCollectionUpdate) {
+            throw new Error();
+        }
         socket.join(roomId);
         socket.emit(Sockets_1.default.PLAYERS_UPDATE, {
             type: 'success',

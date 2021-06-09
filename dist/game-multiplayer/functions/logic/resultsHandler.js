@@ -17,7 +17,7 @@ const resultsHandler = async (roomId, gameId) => {
         let finalResults = [];
         const allPlayers = await db
             .collection(Collections_1.default.MULTIPLAYER_PLAYERS)
-            .find({ roomId: roomId, gameId: gameId })
+            .find({ roomId: roomId })
             .toArray();
         allPlayers.map((el) => {
             const data = {
@@ -32,7 +32,7 @@ const resultsHandler = async (roomId, gameId) => {
         return finalResults;
     }
     catch (e) {
-        console.log(e);
+        throw e;
     }
 };
 exports.default = resultsHandler;

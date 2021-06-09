@@ -39,7 +39,7 @@ const multiplayer = async (socket, roomId, gameId) => {
         }
     }
     catch (e) {
-        app_1.io.to(roomId).emit(Sockets_1.default.FATAL_ERROR, {
+        socket.broadcast.to(roomId).emit(Sockets_1.default.FATAL_ERROR, {
             message: 'Sorry. Fatal error occurred.'
         });
         console.log(e);

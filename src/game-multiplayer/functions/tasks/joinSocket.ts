@@ -8,14 +8,12 @@ import SocketNames from '../../../constants/Sockets'
 export const joinSocket = async (
   socket: any,
   socketId: string,
-  gameId: string,
   roomId: string,
   nickname: string
 ) => {
   const db = getDb()
   const newPlayer: Player = {
     socketId: socketId,
-    gameId: gameId,
     roomId: roomId,
     nickname: nickname,
     correctAnswers: 0,
@@ -27,12 +25,12 @@ export const joinSocket = async (
   try {
     await db.collection(DbCollections.MULTIPLAYER_PLAYERS).insertOne(newPlayer)
 
-    const playersCollectionUpdate = await updatedPlayersCollection(
-      roomId,
-      gameId
-    )
+    const playersCollectionUpdate = await updatedPlayersCollection(roomId)
+    const localPlayersCollectionUpdate = LocalDataStorage.addNewPlayer(roomId, newPlayer)
 
-    LocalDataStorage.addNewPlayer(roomId, newPlayer)
+    if (!localPlayersCollectionUpdate) {
+      throw new Error()
+    }
 
     socket.join(roomId)
     socket.emit(SocketNames.PLAYERS_UPDATE, {

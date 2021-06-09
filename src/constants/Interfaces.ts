@@ -28,7 +28,6 @@ export interface MultiplayerGameType {
 
 export type Player = {
   socketId: string
-  gameId: string
   roomId: string
   nickname: string
   correctAnswers: number
@@ -39,7 +38,6 @@ export type Player = {
 
 export type LocalPlayerInfo = {
   socketId: string
-  gameId: string
   roomId: string
   currentAnswer: {
     code: number

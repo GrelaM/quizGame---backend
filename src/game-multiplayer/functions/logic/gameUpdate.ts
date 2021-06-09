@@ -27,8 +27,7 @@ const gameUpdate = async (gameId: string, roomId: string) => {
     }
 
   } catch (e) {
-    console.log(e)
-    throw new Error('Update failed...')
+    throw e
   }
 }
 

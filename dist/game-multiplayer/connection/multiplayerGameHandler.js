@@ -14,7 +14,7 @@ const multiplayerGameHandler = (socket) => {
         gameHostSocket_1.gameHostSocket(socket, data.gameId, data.roomId, callback);
     });
     socket.on(Sockets_1.default.JOIN, ({ id = socket.id, room, nickname, gameid }) => {
-        joinSocket_1.joinSocket(socket, id, gameid, room, nickname);
+        joinSocket_1.joinSocket(socket, id, room, nickname);
     });
     socket.on(Sockets_1.default.START_GAME, (data) => {
         multiplayer_1.multiplayer(socket, data.roomId, data.gameId);
@@ -23,7 +23,6 @@ const multiplayerGameHandler = (socket) => {
         singleAnswerSocket_1.singleAnswerSocket(socket, data);
     });
     socket.on(Sockets_1.default.SOCKET_DISCONNECT, async () => {
-        console.log('Someone had left...');
         disconnectSocket_1.disconnectSocket(socket);
     });
 };

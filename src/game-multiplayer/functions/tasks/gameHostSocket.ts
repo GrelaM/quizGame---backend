@@ -46,7 +46,7 @@ export const gameHostSocket = async (
       })
     )
   } catch (e) {
-    console.log(e)
+    // console.log(e)
     callback({
       roomState: false,
       alert: {

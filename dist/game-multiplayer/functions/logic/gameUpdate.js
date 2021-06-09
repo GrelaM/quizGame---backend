@@ -26,8 +26,7 @@ const gameUpdate = async (gameId, roomId) => {
         }
     }
     catch (e) {
-        console.log(e);
-        throw new Error('Update failed...');
+        throw e;
     }
 };
 exports.default = gameUpdate;
