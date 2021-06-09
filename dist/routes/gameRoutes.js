@@ -1,16 +1,29 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const GameController_1 = require("../controllers/GameController");
-const GamesStorage_1 = require("../data/GamesStorage");
+const Handler = __importStar(require("../controllers/GameController"));
 const router = express_1.Router();
-router.get('/newgame', GameController_1.startNewGame);
-router.get('/checkfile', (req, res, next) => {
-    res.status(200).json({
-        message: 'Complete data...',
-        timestamp: new Date(),
-        timer: 3,
-        data: GamesStorage_1.gamesStorage
-    });
-});
+router.post('/newgame', Handler.startNewGame);
+router.get('/:gameid/recoveryprocess', Handler.singlePlayerRecoveryMode);
+router.post('/newgame/multiplayer', Handler.startNewMultiPlayerGame);
+router.get('/multiplayer/:gameid/recoveryprocess', Handler.multiplayerRecoveryMode);
 exports.default = router;

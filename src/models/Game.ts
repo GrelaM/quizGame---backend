@@ -1,32 +1,48 @@
-import { QuestionObject } from '../constants/Interfaces';
+import { QuestionObject } from '../constants/Interfaces'
+import { getDb } from '../database/mongodb'
+import idGenerator from '../function/idGenerator'
 
-export class Game {
-	gameId: string;
-	totalQuestionNumber: number;
-	questions: QuestionObject[];
-	givenAnswers: number;
-	points: number;
-	gameStatus: boolean;
-	timer: number;
-	establishedAt: Date;
+export default class Game {
+  artificialGameId: string
+  questionsTotalNumber: number
+  questions: QuestionObject[]
+  givenAnswers: number
+  correctAnswers: number
+  incorrectAnswers: number
+  lastTwoAnswers: number
+  points: number
+  gameStatus: boolean
+  timer: number
+  establishedAt: Date
 
-	constructor(
-		id: string,
-		totalNum: number,
-		questions: QuestionObject[],
-		givenAnswers: number,
-		points: number,
-		status: boolean,
-		timer: number,
-		establishedDate: Date
-	) {
-		this.gameId = id;
-		this.totalQuestionNumber = totalNum;
-		this.questions = questions;
-		this.givenAnswers = givenAnswers;
-		this.points = points;
-		this.gameStatus = status;
-		this.timer = timer;
-		this.establishedAt = establishedDate;
-	}
+  constructor(
+    questionsTotalNumber: number,
+    questions: QuestionObject[],
+    timer: number
+  ) {
+    this.artificialGameId = idGenerator(6)
+    this.questionsTotalNumber = questionsTotalNumber
+    this.questions = questions
+    this.givenAnswers = 0
+    this.correctAnswers = 0
+    this.incorrectAnswers = 0
+    this.lastTwoAnswers = 0
+    this.points = 0
+    this.gameStatus = true
+    this.timer = timer
+    this.establishedAt = new Date()
+  }
+
+  save() {
+    const db = getDb()
+
+    return db
+      .collection('games')
+      .insertOne(this)
+      .then((result) => {
+        const newGame = result.ops[0]
+        return newGame
+      })
+      .catch((err) => console.log(err))
+  }
 }

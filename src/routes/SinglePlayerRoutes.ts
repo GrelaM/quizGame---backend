@@ -2,7 +2,7 @@ import express from 'express';
 
 const router = express.Router();
 
-import * as Handler from '../controllers/SinglePlayerController'
+import * as Handler from '../game-singleplayer/controllers/SinglePlayerController'
 
 router.get('/game/:gameid', Handler.singleGameQuestionHandler)
 

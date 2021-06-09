@@ -1,20 +1,15 @@
 import { Router } from 'express';
 
-import { startNewGame } from '../controllers/GameController';
-
-import { gamesStorage } from '../data/GamesStorage'
+import * as Handler from '../controllers/GameController';
 
 const router = Router();
 
-router.get('/newgame', startNewGame);
+router.post('/newgame', Handler.startNewGame) 
 
-router.get('/checkfile', (req,res,next) => {
-    res.status(200).json({
-        message: 'Complete data...',
-        timestamp: new Date(),
-        timer: 3,
-        data: gamesStorage
-    })
-})
+router.get('/:gameid/recoveryprocess', Handler.singlePlayerRecoveryMode)
+
+router.post('/newgame/multiplayer', Handler.startNewMultiPlayerGame)
+
+router.get('/multiplayer/:gameid/recoveryprocess', Handler.multiplayerRecoveryMode)
 
 export default router;

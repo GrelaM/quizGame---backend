@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { singleGameResultsHandler } from '../controllers/ResultsController';
+import { singleGameResultsHandler } from '../game-singleplayer/controllers/ResultsController';
 
 const router = Router();
 
