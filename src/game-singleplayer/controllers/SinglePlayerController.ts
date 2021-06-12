@@ -39,7 +39,7 @@ export const singleGameQuestionHandler: RequestHandler = async (
 
     const data = {
       category: question.Category,
-      questionNumber: singleGame.givenAnswers + 1, // Answers begin with 0...
+      number: singleGame.givenAnswers + 1, // Answers begin with 0...
       question: question.Question,
       hints: hintsArray,
       answers: answersSortedArray,

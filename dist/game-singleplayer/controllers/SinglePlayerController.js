@@ -27,7 +27,7 @@ const singleGameQuestionHandler = async (req, res, next) => {
         const answersSortedArray = sortArrayHandler(question.Correct, question.Incorrect_1, question.Incorrect_2, question.Incorrect_3);
         const data = {
             category: question.Category,
-            questionNumber: singleGame.givenAnswers + 1,
+            number: singleGame.givenAnswers + 1,
             question: question.Question,
             hints: hintsArray,
             answers: answersSortedArray,
