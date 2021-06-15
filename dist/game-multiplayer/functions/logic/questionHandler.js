@@ -25,11 +25,11 @@ const questionHandler = (data, roomId) => {
     ];
     const answersArray = sortArrayHandler(currentQuestion.Correct, currentQuestion.Incorrect_1, currentQuestion.Incorrect_2, currentQuestion.Incorrect_3);
     const payload = {
-        Category: currentQuestion.Category,
-        Difficulty: currentQuestion.Difficulty,
-        Question: currentQuestion.Question,
-        Hints: mergedHints,
-        Answers: answersArray
+        category: currentQuestion.Category,
+        difficulty: currentQuestion.Difficulty,
+        question: currentQuestion.Question,
+        hints: mergedHints,
+        answers: answersArray
     };
     app_1.io.to(roomId).emit(Sockets_1.default.QUESTION, {
         host: hostData,

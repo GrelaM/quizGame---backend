@@ -29,7 +29,6 @@ export type SingleAnswerData = {
   code: number
   hints: number
   roomId: string
-  gameId: string
 }
 
 const multiplayerGameHandler = (socket: any) => {

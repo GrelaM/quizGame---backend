@@ -4,11 +4,11 @@ import { Player } from '../../../constants/Interfaces'
 import { MultiplayerGameType } from '../../../constants/Interfaces'
 
 export interface Question {
-  Category: string
-  Question: string
-  Difficulty: number
-  Hints: string[]
-  Answers: {
+  category: string
+  question: string
+  difficulty: number
+  hints: string[]
+  answers: {
     code: number
     value: string
   }[]
@@ -44,11 +44,11 @@ const questionHandler = (
   )
 
   const payload: Question = {
-    Category: currentQuestion.Category,
-    Difficulty: currentQuestion.Difficulty,
-    Question: currentQuestion.Question,
-    Hints: mergedHints,
-    Answers: answersArray
+    category: currentQuestion.Category,
+    difficulty: currentQuestion.Difficulty,
+    question: currentQuestion.Question,
+    hints: mergedHints,
+    answers: answersArray
   }
 
   io.to(roomId).emit(SocketNames.QUESTION, {
